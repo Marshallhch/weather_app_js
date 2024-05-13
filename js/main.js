@@ -20,6 +20,7 @@ let searchTimeout = null;
 const searchTimeoutDuration = 500;
 
 searchField.addEventListener('input', function () {
+  // console.log(searchField.value);
   if (!searchField.value) {
     searchField.classList.remove('searching');
     searchResult.innerHTML = '';
@@ -33,7 +34,7 @@ searchField.addEventListener('input', function () {
 
       fetchData(url.geocode(searchField.value), function (location) {
         searchResult.innerHTML = '<ul class="view-list" data-search-list></ul>';
-
+        // console.log(location);
         /**
          * @type { Array } items : 검색 결과를 담을 배열
          */
@@ -67,3 +68,72 @@ searchField.addEventListener('input', function () {
     }, searchTimeoutDuration);
   }
 });
+
+const currentLocationBtn = document.querySelector(
+  '[data-current-location-btn]'
+);
+const container = document.querySelector('[data-container]');
+
+/**
+ * Render All Weather Data which is fetched from API
+ *
+ * @param {number} lat Latitude
+ * @param {number} lon Longitude
+ */
+
+export const updateWeather = function (lat, lon) {
+  // console.log(lat, lon);
+  // 현재 위치 버튼 활성화 토글
+
+  if (window.location.hash === '#/current-location') {
+    currentLocationBtn.setAttribute('disabled', '');
+  } else {
+    currentLocationBtn.removeAttribute('disabled');
+  }
+
+  const currentWeatherSection = document.querySelector(
+    '[data-current-weather]'
+  );
+
+  currentWeatherSection.innerHTML = '';
+
+  // 현재 기상 정보 호출
+  fetchData(url.currentWeather(lat, lon), function (data) {
+    const {
+      weather,
+      dt: dateUnix,
+      sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC },
+      main: { temp, feels_like, pressure, humidity },
+      visibility,
+      timezone,
+    } = data;
+
+    const [{ description, icon }] = weather;
+    const card = document.createElement('div');
+    card.classList.add('card', 'card-lg', 'current-weather-card');
+
+    card.innerHTML = `
+      <h2 class="title-2 card-title">Now</h2>
+      <div class="wrapper">
+        <p class="heading">
+          ${parseInt(temp)}&deg;<sup>c</sup>
+        </p>
+        <img src="images/weather_icons/01d.png" alt="Overcast Clouds" class="weather-icon">
+      </div>
+
+      <p class="body-3">Overcast Clouds</p>
+      <ul class="meta-list">
+        <li class="meta-item">
+          <span class="m-icon">Calendar_today</span>
+          <p class="title-3 meta-text">Thursday 16, Feb</p>
+        </li>
+        <li class="meta-item">
+          <span class="m-icon">location_on</span>
+          <p class="title-3 meta-text">London, GB</p>
+        </li>
+      </ul>
+    `;
+
+    currentWeatherSection.appendChild(card);
+  });
+};
