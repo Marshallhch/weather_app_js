@@ -94,15 +94,19 @@ export const updateWeather = function (lat, lon) {
   const currentWeatherSection = document.querySelector(
     '[data-current-weather]'
   );
+  const forecastSection = document.querySelector('[data-5-day-forecast]');
 
   currentWeatherSection.innerHTML = '';
+  forecastSection.innerHTML = '';
 
   // 현재 기상 정보 호출
   fetchData(url.currentWeather(lat, lon), function (data) {
+    // console.log(data);
     const {
       weather,
+      name,
       dt: dateUnix,
-      sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC },
+      sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC, country },
       main: { temp, feels_like, pressure, humidity },
       visibility,
       timezone,
@@ -118,22 +122,68 @@ export const updateWeather = function (lat, lon) {
         <p class="heading">
           ${parseInt(temp)}&deg;<sup>c</sup>
         </p>
-        <img src="images/weather_icons/01d.png" alt="Overcast Clouds" class="weather-icon">
+        <img src="images/weather_icons/${icon}.png" alt="Overcast Clouds" class="weather-icon">
       </div>
 
-      <p class="body-3">Overcast Clouds</p>
+      <p class="body-3">${description}</p>
       <ul class="meta-list">
         <li class="meta-item">
           <span class="m-icon">Calendar_today</span>
-          <p class="title-3 meta-text">Thursday 16, Feb</p>
+          <p class="title-3 meta-text">${module.getDate(dateUnix, timezone)}</p>
         </li>
         <li class="meta-item">
           <span class="m-icon">location_on</span>
-          <p class="title-3 meta-text">London, GB</p>
+          <p class="title-3 meta-text">${name}, ${country}</p>
         </li>
       </ul>
     `;
 
     currentWeatherSection.appendChild(card);
+
+    // 5일 기상 예보
+    fetchData(url.forecast(lat, lon), function (data) {
+      // console.log(data);
+      const {
+        city: { timezone },
+        list: forecastList,
+      } = data;
+
+      forecastSection.innerHTML = `
+        <h2 class="title-2" id="forecast-label">5 Days Forecast</h2>
+        <div class="card card-lg forecast-card">
+          <ul></ul>
+        </div>
+      `;
+
+      for (const [idx, listData] of forecastList.entries()) {
+        if (idx > 4) break;
+        const {
+          weather,
+          wind: { deg: windDirection, speed: windSpeed },
+          main: { temp },
+          dt: dateTimeUnix,
+        } = listData;
+
+        const [{ description, icon }] = weather;
+
+        const forecastList = document.createElement('li');
+        forecastList.classList.add('card-item');
+
+        forecastList.innerHTML = `
+          <div class="icon-wrapper">
+            <img src="images/weather_icons/01n.png" alt="Overcast clouds" class="weather-icon">
+
+            <span class="span">
+              <p class="title-2">25</p>
+            </span>
+          </div>
+
+          <p class="label-1">17 Feb</p>
+          <p class="label-1">Friday</p>
+        `;
+
+        forecastSection.querySelector('ul').appendChild(forecastList);
+      }
+    });
   });
 };
