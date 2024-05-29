@@ -73,6 +73,7 @@ const currentLocationBtn = document.querySelector(
   '[data-current-location-btn]'
 );
 const container = document.querySelector('[data-container]');
+const loading = document.querySelector('[data-loading]');
 
 /**
  * Render All Weather Data which is fetched from API
@@ -90,6 +91,8 @@ export const updateWeather = function (lat, lon) {
   } else {
     currentLocationBtn.removeAttribute('disabled');
   }
+
+  loading.style.display = 'flex';
 
   const currentWeatherSection = document.querySelector(
     '[data-current-weather]'
@@ -352,6 +355,8 @@ export const updateWeather = function (lat, lon) {
       `;
       highlightSection.appendChild(card);
     });
+
+    loading.style.display = 'none';
   });
 };
 
@@ -400,3 +405,9 @@ export const updateWeather = function (lat, lon) {
 
 // a();
 // b();
+
+// function abc(a, b) {
+//   return a + b;
+// }
+
+// console.log(abc(1, 2));
